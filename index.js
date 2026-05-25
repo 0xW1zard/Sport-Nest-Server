@@ -20,10 +20,29 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        const db = client.db('sportnest');
+        const AllFacilitatesCollection = db.collection('allFacilitate');
+
+
+        app.get('/allFacilitate', async (req, res) => {
+            try{
+                const result = await AllFacilitatesCollection.find().toArray();
+                res.status(200).send(result);
+            }catch(error){
+                console.error("Error fetching data from MongoDB:", error);
+                res.status(500).send({ error: "An error occurred while fetching data." });
+            }
+        })
+
+
+
+
+
+
+
+
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     }catch(error){
         console.error("Error connecting to MongoDB:", error);
