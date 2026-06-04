@@ -7,7 +7,7 @@ const uri = process.env.MONGODB_URI;
 const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -23,6 +23,9 @@ async function run() {
         await client.connect();
         const db = client.db('sportnest');
         const AllFacilitatesCollection = db.collection('allFacilitate');
+        const BookingsCollection = db.collection('bookings');
+
+
 
 
         app.get('/allFacilitate', async (req, res) => {
@@ -35,10 +38,29 @@ async function run() {
             }
         })
 
+        app.get('/allFacilitate/:id', async (req, res) => {
+            try{
+                const { id } = req.params;
+                const result = await AllFacilitatesCollection.findOne({ _id: new ObjectId(id) });
+                res.status(200).send(result);
+            }catch(error){
+                console.error("Error fetching data from MongoDB:", error);
+                res.status(500).send({ error: "An error occurred while fetching data." });
+            }
+        })
 
-
-
-
+        app.post('/bookings', async (req, res) => {
+            try{
+                const bookingDetails = req.body;
+                console.log("Received booking data:", bookingDetails);
+                const result = await BookingsCollection.insertOne(bookingDetails);
+                res.status(201).send(result);
+            }catch(error){
+                console.error("Error processing booking data:", error);
+                res.status(500).send({ error: "An error occurred while processing booking data." });
+            }
+        })
+        
 
 
 
