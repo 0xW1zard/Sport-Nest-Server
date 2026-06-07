@@ -22,13 +22,14 @@ async function run() {
     try {
         await client.connect();
         const db = client.db('sportnest');
-        const AllFacilitatesCollection = db.collection('allFacilitate');
+        const AllFacilitatesCollection = db.collection('allFacilities');
         const BookingsCollection = db.collection('bookings');
 
 
 
 
-        app.get('/allFacilitate', async (req, res) => {
+
+        app.get('/allFacilities', async (req, res) => {
             try{
                 const result = await AllFacilitatesCollection.find().toArray();
                 res.status(200).send(result);
@@ -38,7 +39,7 @@ async function run() {
             }
         })
 
-        app.get('/allFacilitate/:id', async (req, res) => {
+        app.get('/allFacilities/:id', async (req, res) => {
             try{
                 const { id } = req.params;
                 const result = await AllFacilitatesCollection.findOne({ _id: new ObjectId(id) });
@@ -46,6 +47,19 @@ async function run() {
             }catch(error){
                 console.error("Error fetching data from MongoDB:", error);
                 res.status(500).send({ error: "An error occurred while fetching data." });
+            }
+        })
+
+        //add facility data to database
+        app.post('/allFacilities', async (req, res) => {
+            try{
+                const facilityData = req.body;
+                console.log("Received facility data:", facilityData);
+                const result = await AllFacilitatesCollection.insertOne(facilityData);
+                res.status(201).send(result);
+            }catch(error){
+                console.error("Error adding facility:", error);
+                res.status(500).send({ error: "An error occurred while adding the facility." });
             }
         })
 
