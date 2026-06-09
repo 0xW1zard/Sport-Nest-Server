@@ -30,21 +30,21 @@ async function run() {
 
 
         app.get('/allFacilities', async (req, res) => {
-            try{
+            try {
                 const result = await AllFacilitatesCollection.find().toArray();
                 res.status(200).send(result);
-            }catch(error){
+            } catch (error) {
                 console.error("Error fetching data from MongoDB:", error);
                 res.status(500).send({ error: "An error occurred while fetching data." });
             }
         })
 
         app.get('/allFacilities/:id', async (req, res) => {
-            try{
+            try {
                 const { id } = req.params;
                 const result = await AllFacilitatesCollection.findOne({ _id: new ObjectId(id) });
                 res.status(200).send(result);
-            }catch(error){
+            } catch (error) {
                 console.error("Error fetching data from MongoDB:", error);
                 res.status(500).send({ error: "An error occurred while fetching data." });
             }
@@ -52,49 +52,60 @@ async function run() {
 
         //get bookings of user
         app.get('/bookings/:userId', async (req, res) => {
-            try{
-                const {userId} = req.params;
-                const result = await BookingsCollection.find({userId: userId}).toArray();
+            try {
+                const { userId } = req.params;
+                const result = await BookingsCollection.find({ userId: userId }).toArray();
                 res.status(200).send(result);
-            }catch(error){
+            } catch (error) {
                 console.error("Error fetching data from MongoDB:", error);
                 res.status(500).send({ error: "An error occurred while fetching data." });
             }
         })
 
+        app.delete('/bookings/:id', async (req, res) => {
+            try {
+                const { id } = req.params;
+                const result = await BookingsCollection.deleteOne({ _id: new ObjectId(id) })
+                res.status(200).send(result);
+            } catch (error) {
+                console.error("Error fetching data from MongoDB:", error);
+                res.status(500).send({ error: "An error occurred while Deleteing data." });
+            }
+        })
+
         //add facility data to database
         app.post('/allFacilities', async (req, res) => {
-            try{
+            try {
                 const facilityData = req.body;
                 console.log("Received facility data:", facilityData);
                 const result = await AllFacilitatesCollection.insertOne(facilityData);
                 res.status(201).send(result);
-            }catch(error){
+            } catch (error) {
                 console.error("Error adding facility:", error);
                 res.status(500).send({ error: "An error occurred while adding the facility." });
             }
         })
 
         app.post('/bookings', async (req, res) => {
-            try{
+            try {
                 const bookingDetails = req.body;
                 console.log("Received booking data:", bookingDetails);
                 const result = await BookingsCollection.insertOne(bookingDetails);
                 res.status(201).send(result);
-            }catch(error){
+            } catch (error) {
                 console.error("Error processing booking data:", error);
                 res.status(500).send({ error: "An error occurred while processing booking data." });
             }
         })
-        
+
 
 
 
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    }catch(error){
+    } catch (error) {
         console.error("Error connecting to MongoDB:", error);
-    }finally {
+    } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
     }
