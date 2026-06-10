@@ -50,6 +50,18 @@ async function run() {
             }
         })
 
+        //get for manage my facilities
+        app.get('/manage-facilities/:userId', async (req, res) => {
+            try {
+                const { userId } = req.params;
+                const result = await AllFacilitatesCollection.find({ userId: userId }).toArray();
+                res.status(200).send(result);
+            } catch (error) {
+                console.error("Error fetching data from MongoDB:", error);
+                res.status(500).send({ error: "An error occurred while fetching my facilites data." });
+            }
+        })
+
         //get bookings of user
         app.get('/bookings/:userId', async (req, res) => {
             try {
