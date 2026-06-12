@@ -77,6 +77,17 @@ async function run() {
             }
         });
 
+        app.delete('/manage-facilities/:id', async (req, res) => {
+            try {
+                const { id } = req.params;
+                const result = await AllFacilitatesCollection.deleteOne({ _id: new ObjectId(id) })
+                res.status(200).send(result);
+            } catch (error) {
+                console.error("Error fetching data from MongoDB:", error);
+                res.status(500).send({ error: "An error occurred while Deleteing data." });
+            }
+        })
+
         //get bookings of user
         app.get('/bookings/:userId', async (req, res) => {
             try {
@@ -89,7 +100,7 @@ async function run() {
             }
         })
 
-        app.delete('/bookings/:id', async (req, res) => {
+        app.delete('/my-bookings/:id', async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await BookingsCollection.deleteOne({ _id: new ObjectId(id) })
