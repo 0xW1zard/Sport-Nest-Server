@@ -62,6 +62,21 @@ async function run() {
             }
         })
 
+        app.put('/manage-facilities/:id', async (req, res) => {
+            try {
+                const { id } = req.params;
+                const updatedData = req.body;
+                const result = await AllFacilitatesCollection.updateOne(
+                    { _id: new ObjectId(id) },
+                    { $set: updatedData }
+                );
+                res.status(200).send(result);
+            } catch (error) {
+                console.error("Error updating facility:", error);
+                res.status(500).send({ error: "An error occurred while updating the facility." });
+            }
+        });
+
         //get bookings of user
         app.get('/bookings/:userId', async (req, res) => {
             try {
