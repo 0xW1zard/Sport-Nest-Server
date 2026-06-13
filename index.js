@@ -8,6 +8,7 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -17,6 +18,29 @@ const client = new MongoClient(uri, {
     }
 });
 
+const JWKS = createRemoteJWKSet(
+    new URL('http://localhost:3000/api/auth/jwks')
+)
+
+const verifyToken = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).send({ error: "Unauthorized" });
+    }
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).send({ error: "Unauthorized" });
+    }
+    try {
+        const { payload } = await jwtVerify(token, JWKS);
+        console.log("Payload from token:", payload);
+        next();
+    } catch (error) {
+        res.status(403).send({ message: "Forbidden" });
+    }
+}
+
 
 async function run() {
     try {
@@ -24,9 +48,6 @@ async function run() {
         const db = client.db('sportnest');
         const AllFacilitatesCollection = db.collection('allFacilities');
         const BookingsCollection = db.collection('bookings');
-
-
-
 
 
         app.get('/allFacilities', async (req, res) => {
@@ -39,7 +60,7 @@ async function run() {
             }
         })
 
-        app.get('/allFacilities/:id', async (req, res) => {
+        app.get('/allFacilities/:id', verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await AllFacilitatesCollection.findOne({ _id: new ObjectId(id) });
@@ -62,7 +83,7 @@ async function run() {
             }
         })
 
-        app.put('/manage-facilities/:id', async (req, res) => {
+        app.put('/manage-facilities/:id', verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const updatedData = req.body;
@@ -77,7 +98,7 @@ async function run() {
             }
         });
 
-        app.delete('/manage-facilities/:id', async (req, res) => {
+        app.delete('/manage-facilities/:id', verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await AllFacilitatesCollection.deleteOne({ _id: new ObjectId(id) })
@@ -100,7 +121,7 @@ async function run() {
             }
         })
 
-        app.delete('/my-bookings/:id', async (req, res) => {
+        app.delete('/my-bookings/:id', verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await BookingsCollection.deleteOne({ _id: new ObjectId(id) })
@@ -112,7 +133,7 @@ async function run() {
         })
 
         //add facility data to database
-        app.post('/allFacilities', async (req, res) => {
+        app.post('/allFacilities', verifyToken, async (req, res) => {
             try {
                 const facilityData = req.body;
                 console.log("Received facility data:", facilityData);
@@ -123,8 +144,8 @@ async function run() {
                 res.status(500).send({ error: "An error occurred while adding the facility." });
             }
         })
-
-        app.post('/bookings', async (req, res) => {
+        //from my booking page
+        app.post('/bookings', verifyToken, async (req, res) => {
             try {
                 const bookingDetails = req.body;
                 console.log("Received booking data:", bookingDetails);
